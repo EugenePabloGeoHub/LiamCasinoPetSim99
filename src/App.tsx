@@ -148,20 +148,25 @@ export default function App() {
     alert('Withdrawal request sent! The admin will send your gems to your mailbox.');
   };
 
-  const requestDeposit = (amount: number) => {
+  const requestDeposit = (amount: number, robloxUsername?: string) => {
     if (!user || amount <= 0) return;
+    if (!robloxUsername) {
+      alert('Roblox username is required for deposit tracking!');
+      return;
+    }
     
     const newReq: DepositRequest = {
       id: 'dep_' + Date.now(),
       userId: user.id,
       userEmail: user.email,
+      robloxUsername,
       amount,
       status: 'pending',
       timestamp: Date.now()
     };
 
     setDeposits(prev => [newReq, ...prev]);
-    alert('Deposit request sent! Mail the gems to the admin mailbox to be credited.');
+    alert('Deposit request sent! Mail the gems to "LiamPetSim99MailBox" to be credited.');
   };
 
   const completeWithdrawal = (reqId: string) => {
@@ -415,19 +420,34 @@ export default function App() {
             <div className="space-y-8 max-w-2xl mx-auto">
                <div className="pet-card space-y-6">
                 <h2 className="text-3xl font-black text-emerald-400 uppercase italic text-center">Deposit</h2>
-                <p className="text-slate-400 font-bold text-center text-xs">Request a deposit to add more gems. Mail the gems to the admin mailbox to be credited manually.</p>
+                <div className="bg-emerald-500/10 border-2 border-emerald-500/30 p-4 rounded-2xl space-y-2">
+                    <p className="text-emerald-400 font-black text-[10px] uppercase tracking-widest text-center leading-tight">
+                      📬 MAIL GEMS TO: <span className="text-white text-xs underline">LiamPetSim99MailBox</span>
+                    </p>
+                    <p className="text-slate-400 font-bold text-center text-[10px] uppercase italic">
+                      Gems are credited manually after the mail is received.
+                    </p>
+                </div>
                 <div className="flex flex-col space-y-4">
-                    <input 
-                      type="text" 
-                      id="deposit_amt" 
-                      className="pet-input w-full text-center text-2xl" 
-                      placeholder="Amount (e.g. 50k, 10m)..." 
-                    />
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Your Roblox Username</label>
+                       <input type="text" id="deposit_roblox" className="pet-input w-full text-center text-xl" placeholder="Username (For Tracking)..." />
+                    </div>
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Deposit Amount</label>
+                       <input 
+                         type="text" 
+                         id="deposit_amt" 
+                         className="pet-input w-full text-center text-2xl" 
+                         placeholder="Amount (e.g. 50k, 10m)..." 
+                       />
+                    </div>
                     <button onClick={() => {
+                        const robloxUser = (document.getElementById('deposit_roblox') as HTMLInputElement).value;
                         const input = (document.getElementById('deposit_amt') as HTMLInputElement).value;
                         const amt = parseAmount(input);
-                        if (amt > 0) requestDeposit(amt);
-                    }} className="pet-button w-full py-4 text-xl bg-emerald-500 border-emerald-700 shadow-[0_4px_0_rgb(5,150,105)]">Request Deposit</button>
+                        if (amt > 0) requestDeposit(amt, robloxUser);
+                    }} className="pet-button w-full py-4 text-xl bg-emerald-500 border-emerald-700 shadow-[0_4px_0_rgb(5,150,105)]">Confirm Deposit Request</button>
                 </div>
                </div>
 
@@ -539,6 +559,7 @@ export default function App() {
                        <div key={r.id} className="p-4 bg-slate-800 border-2 border-slate-700 rounded-xl flex justify-between items-center">
                           <div>
                             <p className="font-bold text-slate-300">{r.userEmail}</p>
+                            {r.robloxUsername && <p className="text-xs font-black text-ps-yellow uppercase">Roblox: {r.robloxUsername}</p>}
                             <p className="text-xl font-black text-white">💎 {r.amount.toLocaleString()}</p>
                           </div>
                           <button onClick={() => completeDeposit(r.id)} className="pet-button bg-emerald-500 py-2 px-4 text-xs border-emerald-600 shadow-[0_4px_0_rgb(6,95,70)]">Credit User</button>

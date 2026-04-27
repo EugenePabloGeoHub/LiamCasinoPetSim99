@@ -27,6 +27,7 @@ export interface DepositRequest {
   id: string;
   userId: string;
   userEmail: string;
+  robloxUsername?: string;
   amount: number;
   status: 'pending' | 'completed';
   timestamp: number;
