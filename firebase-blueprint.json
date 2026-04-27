@@ -1,0 +1,76 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Represents a player in the casino.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "balance": { "type": "number" },
+        "totalWagered": { "type": "number" },
+        "role": { "type": "string", "enum": ["player", "admin", "mod"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "balance", "totalWagered", "role", "createdAt"]
+    },
+    "ChatMessage": {
+      "title": "Chat Message",
+      "description": "A message sent in a chat room.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "text": { "type": "string" },
+        "roomCode": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "isSystem": { "type": "boolean" }
+      },
+      "required": ["userId", "userEmail", "text", "roomCode", "timestamp"]
+    },
+    "Request": {
+      "title": "Transaction Request",
+      "description": "A deposit or withdrawal request.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "amount": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "completed", "rejected"] },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "reason": { "type": "string" }
+      },
+      "required": ["userId", "userEmail", "amount", "status", "timestamp"]
+    },
+    "SystemConfig": {
+      "title": "System Configuration",
+      "description": "Global settings for the application.",
+      "type": "object",
+      "properties": {
+        "maintenanceMode": { "type": "boolean" }
+      },
+      "required": ["maintenanceMode"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Stores user profile and balance data."
+    },
+    "/messages/{messageId}": {
+      "schema": "ChatMessage",
+      "description": "Stores global and private chat messages."
+    },
+    "/withdrawalRequests/{requestId}": {
+      "schema": "Request",
+      "description": "Stores user withdrawal requests."
+    },
+    "/depositRequests/{requestId}": {
+      "schema": "Request",
+      "description": "Stores user deposit requests."
+    },
+    "/system/config": {
+      "schema": "SystemConfig",
+      "description": "Global application configuration."
+    }
+  }
+}
