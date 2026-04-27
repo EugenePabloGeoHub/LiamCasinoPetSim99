@@ -1,0 +1,37 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Fredoka", ui-sans-serif, system-ui, sans-serif;
+  
+  --color-ps-blue-dark: #0ea5e9;
+  --color-ps-blue-light: #38bdf8;
+  --color-ps-pink: #f472b6;
+  --color-ps-yellow: #facc15;
+}
+
+@layer base {
+  body {
+    @apply bg-slate-950 text-slate-100 font-sans antialiased;
+    background-image: radial-gradient(circle at 2px 2px, #0f172a 1px, transparent 0);
+    background-size: 24px 24px;
+  }
+}
+
+.pet-card {
+  @apply bg-slate-900 border-4 border-slate-800 rounded-3xl p-6 shadow-2xl transition-all duration-200 hover:scale-[1.02] active:scale-95;
+}
+
+.pet-button {
+  @apply px-6 py-3 bg-ps-yellow text-slate-950 font-black rounded-2xl shadow-[0_4px_0_rgb(202,138,4)] 
+         hover:translate-y-[-2px] hover:shadow-[0_6px_0_rgb(161,121,5)] active:translate-y-[2px] active:shadow-none 
+         transition-all disabled:opacity-50 disabled:grayscale uppercase tracking-wide cursor-pointer;
+}
+
+.pet-input {
+  @apply bg-slate-800 border-4 border-slate-700 text-white p-3 rounded-xl font-bold focus:outline-none focus:border-ps-blue-light;
+}
+
+.gem-glow {
+  @apply text-ps-blue-dark drop-shadow-[0_2px_2px_rgba(14,165,233,0.3)];
+}

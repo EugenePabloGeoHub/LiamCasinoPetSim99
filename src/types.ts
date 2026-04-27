@@ -1,0 +1,35 @@
+export type UserRole = 'player' | 'admin';
+
+export interface WithdrawalRequest {
+  id: string;
+  userId: string;
+  userEmail: string;
+  robloxUsername?: string;
+  amount: number;
+  status: 'pending' | 'completed';
+  timestamp: number;
+}
+
+export interface CasinoUser {
+  id: string;
+  email: string;
+  balance: number;
+  role: UserRole;
+}
+
+export interface GameSessionState {
+  balance: number;
+  bet: number;
+  lastWin: number;
+}
+
+export interface DepositRequest {
+  id: string;
+  userId: string;
+  userEmail: string;
+  amount: number;
+  status: 'pending' | 'completed';
+  timestamp: number;
+}
+
+export type CasinoRoom = 'lobby' | 'login' | 'slots' | 'highlow' | 'coinflip' | 'plinko' | 'luckybox' | 'admin' | 'admin-auth' | 'withdraw' | 'deposit';
