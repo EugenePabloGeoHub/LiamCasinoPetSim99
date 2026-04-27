@@ -15,7 +15,7 @@ for (let i = 0; i < ROWS; i++) {
   }
 }
 
-const MULTIPLIERS = [12, 5, 2, 0.5, 0.2, 0.5, 2, 5, 12];
+const MULTIPLIERS = [10, 4, 1.5, 0.4, 0.1, 0.4, 1.5, 4, 10];
 
 export default function Plinko({ onBack, state, setState }: { onBack: () => void; state: GameSessionState; setState: any }) {
   const [activeBalls, setActiveBalls] = useState<{ id: number; pathX: number[]; pathY: number[]; bet: number; mult: number }[]>([]);

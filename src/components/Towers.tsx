@@ -5,7 +5,7 @@ import { GameSessionState } from '../types';
 import { parseAmount } from '../lib/utils';
 
 const LEVELS = 8;
-const MULTIPLIERS = [1.5, 2.3, 3.5, 5.5, 8.5, 13, 20, 32];
+const MULTIPLIERS = [1.2, 1.8, 2.8, 4.5, 7.5, 12, 20, 35]; // Slightly adjusted early game down
 
 export default function Towers({ onBack, state, setState }: { onBack: () => void, state: GameSessionState, setState: Dispatch<SetStateAction<GameSessionState>> }) {
   const [level, setLevel] = useState(0);

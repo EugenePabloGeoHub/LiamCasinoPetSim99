@@ -6,13 +6,13 @@ import { parseAmount } from '../lib/utils';
 
 const SYMBOLS = ['💎', '🍭', '🍕', '🐉', '🎁', '⚡', '👑'];
 const PAYOUTS: Record<string, number> = {
-  '👑': 100,
-  '⚡': 50,
-  '🐉': 25,
-  '💎': 15,
-  '🎁': 10,
-  '🍕': 5,
-  '🍭': 2
+  '👑': 50,    // Harder: 100 -> 50
+  '⚡': 25,    // Harder: 50 -> 25
+  '🐉': 15,    // Harder: 25 -> 15
+  '💎': 8,     // Harder: 15 -> 8
+  '🎁': 5,     // Harder: 10 -> 5
+  '🍕': 3,     // Harder: 5 -> 3
+  '🍭': 1.5    // Harder: 2 -> 1.5
 };
 
 export default function SlotMachine({ onBack, state, setState }: { onBack: () => void, state: GameSessionState, setState: Dispatch<SetStateAction<GameSessionState>> }) {

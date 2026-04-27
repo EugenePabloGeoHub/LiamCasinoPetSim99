@@ -95,7 +95,7 @@ export default function Blackjack({ onBack, state, setState }: { onBack: () => v
     if (pTotal > 21) {
       endMsg = 'DEALER WINS (BUST)';
     } else if (dTotal > 21 || pTotal > dTotal) {
-      winAmt = Math.floor(currentBet * (pTotal === 21 && pHand.length === 2 ? 2.5 : 2));
+      winAmt = Math.floor(currentBet * (pTotal === 21 && pHand.length === 2 ? 2.2 : 1.8));
       endMsg = pTotal === 21 && pHand.length === 2 ? 'BLACKJACK!' : 'YOU WIN!';
     } else if (pTotal === dTotal) {
       winAmt = currentBet;
