@@ -15,61 +15,71 @@ for (let i = 0; i < ROWS; i++) {
   }
 }
 
-const MULTIPLIERS = [10, 5, 1.5, 0.5, 0.2, 0.5, 1.5, 5, 10];
+const MULTIPLIERS = [12, 5, 2, 0.5, 0.2, 0.5, 2, 5, 12];
 
 export default function Plinko({ onBack, state, setState }: { onBack: () => void; state: GameSessionState; setState: any }) {
-  const [isDropping, setIsDropping] = useState(false);
-  const [ballPos, setBallPos] = useState({ x: 250, y: 50 });
-  const [result, setResult] = useState<number | null>(null);
+  const [activeBalls, setActiveBalls] = useState<{ id: number; pathX: number[]; pathY: number[]; bet: number; mult: number }[]>([]);
   const [message, setMessage] = useState('');
   const [betInput, setBetInput] = useState(state.bet.toString());
+  const ballIdCounter = useRef(0);
 
-  const dropBall = async () => {
+  const dropBall = () => {
     const currentBet = parseAmount(betInput);
-    if (isDropping || state.balance < currentBet || currentBet <= 0) return;
+    if (state.balance < currentBet || currentBet <= 0) return;
 
-    setIsDropping(true);
-    setResult(null);
     setMessage('');
     setState((s: any) => ({ ...s, balance: Math.max(0, s.balance - currentBet), bet: currentBet }));
 
     let currentX = 250;
     let currentY = 50;
-    const path = [];
+    const pathX = [currentX];
+    const pathY = [currentY];
 
     for (let i = 0; i < ROWS; i++) {
       const direction = Math.random() < 0.5 ? -1 : 1;
       currentX += direction * 20;
       currentY += 40;
-      path.push({ x: currentX, y: currentY });
+      pathX.push(currentX);
+      pathY.push(currentY);
     }
 
-    // currentX ranges from 90 to 410 with ROWS=8 (steps of +/- 20)
+    // End point jitter for bucket landing
+    const finalX = currentX + (Math.random() * 10 - 5);
+    const finalY = currentY + 30;
+    pathX.push(finalX);
+    pathY.push(finalY);
+
     const bucketIndex = Math.round((currentX - 90) / 40);
     const clampedIndex = Math.max(0, Math.min(MULTIPLIERS.length - 1, bucketIndex));
     const mult = MULTIPLIERS[clampedIndex];
 
-    for (const pos of path) {
-      setBallPos(pos);
-      await new Promise(r => setTimeout(r, 80)); // Slightly faster drop
-    }
+    const newBall = {
+      id: ballIdCounter.current++,
+      pathX,
+      pathY,
+      bet: currentBet,
+      mult
+    };
 
-    const winAmt = Math.floor(currentBet * mult);
+    setActiveBalls(prev => [...prev, newBall]);
+  };
+
+  const onBallComplete = (ballId: number, mult: number, bet: number) => {
+    const winAmt = Math.floor(bet * mult);
     setState((s: any) => ({ ...s, balance: s.balance + winAmt }));
-    setResult(mult);
     
     if (mult > 1) {
-      setMessage(`${mult === 10 ? 'INSANE!' : 'JACKPOT!'} x${mult} - +${winAmt.toLocaleString()} GEMS! 🎉`);
+      setMessage(`WIN x${mult}! +${winAmt.toLocaleString()} 🎉`);
     } else if (mult < 1) {
-      setMessage(`UNLUCKY - You only got +${winAmt.toLocaleString()} GEMS back.`);
+      setMessage(`- ${Math.floor(bet - winAmt).toLocaleString()} GEMS`);
     } else {
-      setMessage('Broke even - Returned all gems.');
+      setMessage('Even split 🤝');
     }
 
+    // Remove ball after a short delay
     setTimeout(() => {
-      setIsDropping(false);
-      setBallPos({ x: 250, y: 50 });
-    }, 1000);
+      setActiveBalls(prev => prev.filter(b => b.id !== ballId));
+    }, 500);
   };
 
   const handleBetChange = (val: string) => {
@@ -84,8 +94,8 @@ export default function Plinko({ onBack, state, setState }: { onBack: () => void
     <div className="flex flex-col items-center justify-center p-4 sm:p-8 space-y-8 h-full bg-slate-900 rounded-3xl">
       <div className="text-center">
         <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter mb-2">Gem Plinko</h2>
-        <p className="text-slate-400 font-bold text-sm">Drop the gem and hit huge multipliers!</p>
-        <p className="text-slate-600 font-bold text-[9px] uppercase tracking-tighter mt-1">House Edge: 8% | Up to 10x Multiplier</p>
+        <p className="text-slate-400 font-bold text-sm">Drop gems and hit multipliers up to 12x!</p>
+        <p className="text-slate-600 font-bold text-[9px] uppercase tracking-tighter mt-1">Provably Fair: Random Path</p>
       </div>
 
       <div className="relative w-full max-w-[500px] h-[500px] bg-slate-950 rounded-3xl border-8 border-slate-800 overflow-hidden shadow-inner font-bold">
@@ -112,24 +122,40 @@ export default function Plinko({ onBack, state, setState }: { onBack: () => void
           ))}
         </div>
 
-        {/* Ball */}
-        <motion.div
-          animate={{ x: ballPos.x - 10, y: ballPos.y - 10 }}
-          transition={{ type: 'spring', damping: 10 }}
-          className="absolute w-6 h-6 bg-ps-yellow rounded-full shadow-2xl border-2 border-white flex items-center justify-center text-xs z-10"
-        >
-          💎
-        </motion.div>
+        {/* Balls */}
+        <AnimatePresence>
+          {activeBalls.map((ball) => (
+            <motion.div
+              key={ball.id}
+              initial={{ x: ball.pathX[0] - 10, y: ball.pathY[0] - 10 }}
+              animate={{ 
+                x: ball.pathX.map(x => x - 10),
+                y: ball.pathY.map(y => y - 10)
+              }}
+              transition={{ 
+                duration: 1.5, 
+                ease: "linear",
+                times: ball.pathX.map((_, i) => i / (ball.pathX.length - 1))
+              }}
+              onAnimationComplete={() => onBallComplete(ball.id, ball.mult, ball.bet)}
+              className="absolute w-6 h-6 bg-ps-yellow rounded-full shadow-2xl border-2 border-white flex items-center justify-center text-xs z-10"
+            >
+              💎
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
 
       <div className="w-full max-w-md space-y-6">
         <div className="h-8 text-center px-4">
-          <AnimatePresence>
+          <AnimatePresence mode="wait">
             {message && (
               <motion.span 
+                key={message}
                 initial={{ scale: 0.8, opacity: 0 }} 
                 animate={{ scale: 1, opacity: 1 }} 
-                className={`font-black text-lg block uppercase italic ${result && result >= 1 ? 'text-ps-blue-light' : 'text-ps-pink'}`}
+                exit={{ opacity: 0 }}
+                className={`font-black text-lg block uppercase italic ${!message.includes('-') ? 'text-ps-blue-light' : 'text-ps-pink'}`}
               >
                 {message}
               </motion.span>
@@ -157,8 +183,8 @@ export default function Plinko({ onBack, state, setState }: { onBack: () => void
 
         <button 
           onClick={dropBall} 
-          disabled={isDropping || state.balance < parseAmount(betInput)} 
-          className="pet-button w-full flex items-center justify-center gap-2 py-4"
+          disabled={state.balance < parseAmount(betInput)} 
+          className="pet-button w-full flex items-center justify-center gap-2 py-4 active:scale-95 transition-transform"
         >
           <Play className="w-6 h-6" />
           <span className="text-xl">Drop Ball ({parseAmount(betInput).toLocaleString()})</span>

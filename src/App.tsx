@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
+  TrendingUp,
+  PlusCircle,
   Coins, 
   Terminal, 
   ChevronLeft, 
@@ -18,32 +20,32 @@ import {
 import { CasinoRoom, CasinoUser, WithdrawalRequest, DepositRequest } from './types';
 import { parseAmount } from './lib/utils';
 import SlotMachine from './components/SlotMachine';
-import HighLow from './components/HighLow';
 import CoinFlip from './components/CoinFlip';
 import Plinko from './components/Plinko';
-import LuckyBox from './components/LuckyBox';
+import Blackjack from './components/Blackjack';
+import Towers from './components/Towers';
 
 const ADMIN_PASSWORD = 'nugget';
 
 export default function App() {
   const [room, setRoom] = useState<CasinoRoom>('lobby');
   const [user, setUser] = useState<CasinoUser | null>(() => {
-    const saved = localStorage.getItem('ps99_v3_current_user');
+    const saved = localStorage.getItem('ps99_v4_current_user');
     return saved ? JSON.parse(saved) : null;
   });
   
   const [allUsers, setAllUsers] = useState<CasinoUser[]>(() => {
-    const saved = localStorage.getItem('ps99_v3_all_users');
+    const saved = localStorage.getItem('ps99_v4_all_users');
     return saved ? JSON.parse(saved) : [];
   });
 
   const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>(() => {
-    const saved = localStorage.getItem('ps99_v3_withdrawals');
+    const saved = localStorage.getItem('ps99_v4_withdrawals');
     return saved ? JSON.parse(saved) : [];
   });
 
   const [deposits, setDeposits] = useState<DepositRequest[]>(() => {
-    const saved = localStorage.getItem('ps99_v3_deposits');
+    const saved = localStorage.getItem('ps99_v4_deposits');
     return saved ? JSON.parse(saved) : [];
   });
 
@@ -54,7 +56,7 @@ export default function App() {
   // Persistence
   useEffect(() => {
     if (user) {
-      localStorage.setItem('ps99_v3_current_user', JSON.stringify(user));
+      localStorage.setItem('ps99_v4_current_user', JSON.stringify(user));
       setAllUsers(prev => {
         const index = prev.findIndex(u => u.id === user.id);
         if (index > -1) {
@@ -66,26 +68,26 @@ export default function App() {
         }
       });
     } else {
-      localStorage.removeItem('ps99_v3_current_user');
+      localStorage.removeItem('ps99_v4_current_user');
     }
   }, [user]);
 
   useEffect(() => {
-    localStorage.setItem('ps99_v3_all_users', JSON.stringify(allUsers));
+    localStorage.setItem('ps99_v4_all_users', JSON.stringify(allUsers));
   }, [allUsers]);
 
   useEffect(() => {
-    localStorage.setItem('ps99_v3_withdrawals', JSON.stringify(withdrawals));
+    localStorage.setItem('ps99_v4_withdrawals', JSON.stringify(withdrawals));
   }, [withdrawals]);
 
   useEffect(() => {
-    localStorage.setItem('ps99_v3_deposits', JSON.stringify(deposits));
+    localStorage.setItem('ps99_v4_deposits', JSON.stringify(deposits));
   }, [deposits]);
 
   useEffect(() => {
     // Auto-login if only one account exists or last used
     if (!user && allUsers.length > 0) {
-      const savedUser = localStorage.getItem('ps99_v3_current_user');
+      const savedUser = localStorage.getItem('ps99_v4_current_user');
       if (savedUser) {
         setUser(JSON.parse(savedUser));
       }
@@ -113,6 +115,22 @@ export default function App() {
     setUser(null);
     setRoom('lobby');
     setIsAdminAuthenticated(false);
+  };
+
+  const resetAllData = () => {
+    if (confirm('ARE YOU ABSOLUTELY SURE? This will permanently DELETE ALL accounts, balances, and request histories for EVERYONE.')) {
+      setAllUsers([]);
+      setUser(null);
+      setWithdrawals([]);
+      setDeposits([]);
+      localStorage.removeItem('ps99_v3_current_user');
+      localStorage.removeItem('ps99_v3_all_users');
+      localStorage.removeItem('ps99_v3_withdrawals');
+      localStorage.removeItem('ps99_v3_deposits');
+      setRoom('lobby');
+      setIsAdminAuthenticated(false);
+      alert('DATABASE PURGED. All accounts have been reset.');
+    }
   };
 
   const updateBalance = (userId: string, amount: number) => {
@@ -189,7 +207,7 @@ export default function App() {
       setRoom('admin');
       setAdminAuthInput('');
     } else {
-      alert('Wrong password, nugget!');
+      alert('Wrong password!');
     }
   };
 
@@ -207,36 +225,33 @@ export default function App() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 sm:gap-6">
+        <div className="flex items-center gap-4 sm:gap-8">
           {user && (
-            <div className="bg-slate-800 border-2 border-slate-700 rounded-2xl px-4 py-1.5 flex flex-col items-end shadow-sm">
-              <span className="text-[8px] font-bold text-ps-blue-light uppercase tracking-wider">Balance</span>
-              <span className="text-lg font-black text-ps-blue-light leading-none">💎 {user.balance.toLocaleString()}</span>
+            <div className="bg-slate-800 border-4 border-slate-700 rounded-[2rem] px-8 py-3 flex flex-col items-center shadow-xl hover:scale-105 transition-transform cursor-pointer" onClick={() => setRoom('deposit')}>
+              <span className="text-[10px] font-black text-ps-blue-light uppercase tracking-widest leading-none mb-1">Total Gems</span>
+              <span className="text-3xl font-black text-white leading-none tracking-tighter">💎 {user.balance.toLocaleString()}</span>
             </div>
           )}
           
-          <div className="flex gap-2">
+          <div className="flex gap-4">
             <button 
               onClick={() => {
                 if (isAdminAuthenticated) setRoom('admin');
                 else setRoom('admin-auth');
               }} 
-              className={`p-2 border-4 rounded-xl transition-all ${room === 'admin' ? 'bg-ps-yellow border-yellow-500 text-slate-900 shadow-none translate-y-[2px]' : 'bg-slate-800 border-slate-700 text-slate-500 hover:border-slate-600'}`}
+              className={`p-4 border-4 rounded-2xl transition-all ${room === 'admin' ? 'bg-ps-yellow border-yellow-500 text-slate-900' : 'bg-slate-800 border-slate-700 text-slate-500 hover:border-slate-600'}`}
             >
-              <Terminal className="w-5 h-5" />
+              <Terminal className="w-8 h-8" />
             </button>
             
             {user ? (
-              <div className="flex items-center gap-2">
-                <div className="hidden sm:flex flex-col items-end">
-                   <span className="text-[10px] font-bold text-white uppercase">{user.email}</span>
-                </div>
-                <button onClick={logout} className="p-2 bg-slate-800 border-4 border-slate-700 rounded-xl text-ps-pink hover:border-ps-pink transition-colors">
-                  <LogOut className="w-5 h-5" />
+              <div className="flex items-center gap-4">
+                <button onClick={logout} className="p-4 bg-slate-900 border-4 border-slate-700 rounded-2xl text-ps-pink hover:border-ps-pink transition-colors shadow-lg">
+                  <LogOut className="w-8 h-8" />
                 </button>
               </div>
             ) : (
-              <button onClick={() => setRoom('login')} className="pet-button px-4 py-2 text-xs">Login</button>
+              <button onClick={() => setRoom('login')} className="pet-button px-10 py-4 text-xl bg-ps-yellow text-slate-900 border-yellow-600 shadow-[0_6px_0_rgb(161,121,5)]">LOGIN</button>
             )}
           </div>
         </div>
@@ -310,57 +325,35 @@ export default function App() {
               exit={{ opacity: 0, scale: 0.95 }}
               className="space-y-12"
             >
-              {/* Hero */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="md:col-span-2 bg-gradient-to-br from-slate-900 to-indigo-950 rounded-[2rem] p-8 text-white relative overflow-hidden shadow-2xl group cursor-pointer border-4 border-slate-800" onClick={() => setRoom('slots')}>
-                    <div className="absolute -right-10 -bottom-10 opacity-10 group-hover:scale-110 transition-transform duration-500">
-                      <Gamepad2 className="w-64 h-64" />
-                    </div>
-                    <div className="relative z-10 space-y-4">
-                      <div className="inline-block px-3 py-1 bg-white/5 rounded-full text-[10px] font-bold uppercase tracking-widest text-ps-yellow border border-white/10 backdrop-blur-sm">
-                        High Stakes
-                      </div>
-                      <h2 className="text-5xl font-black uppercase italic tracking-tighter leading-tight">Emerald<br />Slot Reels</h2>
-                      <p className="text-slate-400 font-bold max-w-xs">Match 3 rare symbols like Crowns 👑 or Dragons 🐉 to win up to 100x your bet!</p>
-                      <button onClick={() => setRoom('slots')} className="pet-button bg-ps-yellow text-slate-900 border-yellow-600 shadow-[0_6px_0_rgb(161,121,5)] px-10">
-                        Play Now 💎
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="bg-slate-900 rounded-[2rem] p-8 border-4 border-slate-800 shadow-2xl flex flex-col justify-between">
-                    <div>
-                       <div className="w-12 h-12 bg-ps-pink/10 rounded-2xl flex items-center justify-center mb-6 border border-ps-pink/20">
-                        <Wallet className="w-6 h-6 text-ps-pink" />
-                       </div>
-                       <h3 className="text-2xl font-black text-white uppercase italic">Wallet</h3>
-                       <p className="text-slate-500 font-bold text-xs uppercase tracking-widest">Mailbox Withdrawals</p>
-                    </div>
-                    <div className="space-y-4 pt-8">
-                       <div className="flex justify-between items-end border-b-2 border-slate-800 pb-2">
-                         <span className="text-slate-500 font-bold text-[10px] uppercase">Gems Ready</span>
-                         <span className="text-2xl font-black text-ps-blue-light animate-pulse">💎 {user.balance.toLocaleString()}</span>
-                       </div>
-                       <div className="flex gap-2 w-full">
-                         <button onClick={() => setRoom('withdraw')} className="flex-1 pet-button text-[10px] py-2 bg-ps-pink border-pink-700 shadow-[0_4px_0_rgb(190,24,93)] text-white">
-                           Withdraw
-                         </button>
-                         <button onClick={() => setRoom('deposit')} className="flex-1 pet-button text-[10px] py-2 bg-emerald-500 border-emerald-700 shadow-[0_4px_0_rgb(5,150,105)] text-white">
-                           Deposit
-                         </button>
-                       </div>
-                    </div>
-                  </div>
+              {/* Hero Section - Quick Actions */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div 
+                  onClick={() => setRoom('deposit')}
+                  className="bg-emerald-500 rounded-[2.5rem] p-8 text-white flex flex-col items-center justify-center text-center space-y-4 border-b-[8px] border-emerald-700 cursor-pointer hover:scale-105 transition-transform shadow-2xl"
+                >
+                  <PlusCircle className="w-16 h-16" />
+                  <h2 className="text-4xl font-black italic uppercase">Deposit Gems</h2>
+                  <p className="font-bold opacity-80 uppercase text-xs tracking-widest">Add gems to your balance</p>
+                </div>
+                <div 
+                  onClick={() => setRoom('withdraw')}
+                  className="bg-ps-pink rounded-[2.5rem] p-8 text-white flex flex-col items-center justify-center text-center space-y-4 border-b-[8px] border-pink-700 cursor-pointer hover:scale-105 transition-transform shadow-2xl"
+                >
+                  <Wallet className="w-16 h-16" />
+                  <h2 className="text-4xl font-black italic uppercase">Withdraw Gems</h2>
+                  <p className="font-bold opacity-80 uppercase text-xs tracking-widest">Get gems in your mailbox</p>
+                </div>
               </div>
 
               {/* Game Grid */}
-              <div className="space-y-6">
-                <h3 className="text-2xl font-black text-white uppercase italic">Variety Games</h3>
+              <div className="space-y-8">
+                <h3 className="text-3xl font-black text-white uppercase italic text-center">Featured Games</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                  <GameCard title="Higher Lower" desc="Predict card order. (1.9x) - House Edge: 5%" icon="🃏" bg="bg-indigo-600" shadow="shadow-[0_8px_0_rgb(55,48,163)]" onClick={() => setRoom('highlow')} />
-                  <GameCard title="Coin Flip" desc="Double or nothing? (1.9x) - House Edge: 5%" icon="🪙" bg="bg-sky-600" shadow="shadow-[0_8px_0_rgb(7,89,133)]" onClick={() => setRoom('coinflip')} />
-                  <GameCard title="Gem Plinko" desc="Up to 10x! - House Edge: 8%" icon="🥎" bg="bg-emerald-600" shadow="shadow-[0_8px_0_rgb(6,95,70)]" onClick={() => setRoom('plinko')} isNewHelp="Risk It!" />
-                  <GameCard title="Lucky Box" desc="Big Multipliers! - House Edge: 10%" icon="🎁" bg="bg-ps-yellow" shadow="shadow-[0_8px_0_rgb(161,121,5)]" onClick={() => setRoom('luckybox')} isNewHelp="New!" />
+                  <GameCard title="Emerald Reels" desc="Match 3 symbols! Up to 80x." icon="💎" bg="bg-emerald-600" shadow="shadow-[0_8px_0_rgb(6,95,70)]" onClick={() => setRoom('slots')} isNewHelp="Popular!" />
+                  <GameCard title="Blackjack" desc="Classic 21. Beat the dealer! (2.2x)" icon="♠️" bg="bg-rose-600" shadow="shadow-[0_8px_0_rgb(159,18,57)]" onClick={() => setRoom('blackjack')} isNewHelp="Hot!" />
+                  <GameCard title="Towers" desc="Climb to 100x! High risk, mega rewards." icon="🏰" bg="bg-amber-600" shadow="shadow-[0_8px_0_rgb(180,83,9)]" onClick={() => setRoom('towers')} isNewHelp="Bento!" />
+                  <GameCard title="Coin Flip" desc="Double or nothing? (1.8x)" icon="🪙" bg="bg-sky-600" shadow="shadow-[0_8px_0_rgb(7,89,133)]" onClick={() => setRoom('coinflip')} />
+                  <GameCard title="Gem Plinko" desc="Watch gems drop up to 6x!" icon="🥎" bg="bg-emerald-600" shadow="shadow-[0_8px_0_rgb(6,95,70)]" onClick={() => setRoom('plinko')} />
                 </div>
               </div>
             </motion.div>
@@ -369,16 +362,6 @@ export default function App() {
           {user && room === 'slots' && (
             <motion.div key="slots" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="pet-card">
               <SlotMachine onBack={() => setRoom('lobby')} state={{ balance: user.balance, bet: betAmount, lastWin: 0 }} setState={(s: any) => {
-                const newState = typeof s === 'function' ? s({ balance: user.balance, bet: betAmount, lastWin: 0 }) : s;
-                setUser(prev => prev ? { ...prev, balance: newState.balance } : null);
-                if (newState.bet) setBetAmount(newState.bet);
-              }} />
-            </motion.div>
-          )}
-
-          {user && room === 'highlow' && (
-            <motion.div key="highlow" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="pet-card">
-              <HighLow onBack={() => setRoom('lobby')} state={{ balance: user.balance, bet: betAmount, lastWin: 0 }} setState={(s: any) => {
                 const newState = typeof s === 'function' ? s({ balance: user.balance, bet: betAmount, lastWin: 0 }) : s;
                 setUser(prev => prev ? { ...prev, balance: newState.balance } : null);
                 if (newState.bet) setBetAmount(newState.bet);
@@ -406,9 +389,19 @@ export default function App() {
             </motion.div>
           )}
 
-          {user && room === 'luckybox' && (
-            <motion.div key="luckybox" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="pet-card">
-              <LuckyBox onBack={() => setRoom('lobby')} state={{ balance: user.balance, bet: betAmount, lastWin: 0 }} setState={(s: any) => {
+          {user && room === 'blackjack' && (
+            <motion.div key="blackjack" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="pet-card">
+              <Blackjack onBack={() => setRoom('lobby')} state={{ balance: user.balance, bet: betAmount, lastWin: 0 }} setState={(s: any) => {
+                const newState = typeof s === 'function' ? s({ balance: user.balance, bet: betAmount, lastWin: 0 }) : s;
+                setUser(prev => prev ? { ...prev, balance: newState.balance } : null);
+                if (newState.bet) setBetAmount(newState.bet);
+              }} />
+            </motion.div>
+          )}
+
+          {user && room === 'towers' && (
+            <motion.div key="towers" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="pet-card">
+              <Towers onBack={() => setRoom('lobby')} state={{ balance: user.balance, bet: betAmount, lastWin: 0 }} setState={(s: any) => {
                 const newState = typeof s === 'function' ? s({ balance: user.balance, bet: betAmount, lastWin: 0 }) : s;
                 setUser(prev => prev ? { ...prev, balance: newState.balance } : null);
                 if (newState.bet) setBetAmount(newState.bet);
@@ -584,6 +577,11 @@ export default function App() {
                   </div>
                </div>
                <button onClick={() => setRoom('lobby')} className="w-full text-slate-500 font-bold hover:text-slate-300">Exit Admin Console</button>
+               <div className="pt-8 border-t border-slate-800">
+                  <button onClick={resetAllData} className="w-full text-[10px] font-black text-ps-pink/30 hover:text-ps-pink uppercase tracking-[0.3em] transition-colors">
+                    Emergency Database Purge
+                  </button>
+               </div>
             </div>
           )}
         </AnimatePresence>

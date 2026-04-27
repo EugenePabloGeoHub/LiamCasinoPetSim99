@@ -33,4 +33,4 @@ export interface DepositRequest {
   timestamp: number;
 }
 
-export type CasinoRoom = 'lobby' | 'login' | 'slots' | 'highlow' | 'coinflip' | 'plinko' | 'luckybox' | 'admin' | 'admin-auth' | 'withdraw' | 'deposit';
+export type CasinoRoom = 'lobby' | 'login' | 'slots' | 'coinflip' | 'plinko' | 'blackjack' | 'towers' | 'admin' | 'admin-auth' | 'withdraw' | 'deposit';

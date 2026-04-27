@@ -52,7 +52,7 @@ export default function SlotMachine({ onBack, state, setState }: { onBack: () =>
       setState(s => ({ ...s, balance: s.balance + win }));
       setMessage(`MEGA WIN! +${win.toLocaleString()} GEMS! 🎉`);
     } else if (new Set(final).size < 3) {
-      // 2-match is a partial refund (0.8x) - usually a loss in casino terms
+      // 2-match is a partial refund (0.8x)
       const win = Math.floor(currentBet * 0.8);
       setState(s => ({ ...s, balance: s.balance + win }));
       setMessage(`Almost! Refunded ${win.toLocaleString()} GEMS.`);
@@ -74,7 +74,7 @@ export default function SlotMachine({ onBack, state, setState }: { onBack: () =>
       <div className="text-center">
         <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter mb-2">Emerald Reels</h2>
         <p className="text-slate-400 font-bold text-sm">Spin to match 3 symbols. Crowns pay 100x!</p>
-        <p className="text-slate-600 font-bold text-[9px] uppercase tracking-tighter mt-1">House Edge: 8% | Favored Odds Disclaimed</p>
+        <p className="text-slate-600 font-bold text-[9px] uppercase tracking-tighter mt-1">Favored Odds Disclaimed</p>
       </div>
 
       <div className="flex gap-4 p-6 bg-slate-800 rounded-3xl border-8 border-slate-700 shadow-inner">

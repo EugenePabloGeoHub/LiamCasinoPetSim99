@@ -29,7 +29,7 @@ export default function CoinFlip({ onBack, state, setState }: { onBack: () => vo
     setFlipping(false);
 
     if (choice === result) {
-      const win = Math.floor(currentBet * 1.9);
+      const win = currentBet * 2;
       setState(s => ({ ...s, balance: s.balance + win }));
       setMessage(`YOU WON ${win.toLocaleString()} GEMS! 🎉`);
     } else {
@@ -49,8 +49,8 @@ export default function CoinFlip({ onBack, state, setState }: { onBack: () => vo
     <div className="flex flex-col items-center justify-center p-4 sm:p-8 space-y-8 h-full bg-slate-900 rounded-3xl">
       <div className="text-center">
         <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter mb-2">Coin Flip</h2>
-        <p className="text-slate-400 font-bold text-sm">Heads or Tails? (1.9x Payout)</p>
-        <p className="text-slate-600 font-bold text-[9px] uppercase tracking-tighter mt-1">House Edge: 5% | Provably Fair: 50% chance</p>
+        <p className="text-slate-400 font-bold text-sm">Heads or Tails? (2x Payout)</p>
+        <p className="text-slate-600 font-bold text-[9px] uppercase tracking-tighter mt-1">Provably Fair: 50% chance</p>
       </div>
 
       <div className="relative h-48 w-48">
